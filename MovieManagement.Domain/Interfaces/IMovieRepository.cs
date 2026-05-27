@@ -10,6 +10,7 @@ namespace MovieManagement.Domain.Interfaces
         public void Adicionar(Movie movie);
         public List<Movie> Listar();
         public Movie? ObterPorTitulo(string titulo);
-        public bool Remover(string titulo);
+        public bool Remover(int id);
+        public bool ExistePorTitulo(string titulo);
     }
 }
