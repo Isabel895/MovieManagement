@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ConsoleApp1/MovieManagement.Data.csproj" />
+  <Project Path="MovieManagement.Business/MovieManagement.Business.csproj" />
+  <Project Path="MovieManagement.Domain/MovieManagement.Domain.csproj" />
+  <Project Path="MovieManagementUI/MovieManagement.UI.csproj" />
+</Solution>
