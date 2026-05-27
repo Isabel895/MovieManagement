@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MovieManagement.Business\MovieManagement.Business.csproj" />
     <ProjectReference Include="..\MovieManagement.Domain\MovieManagement.Domain.csproj" />
   </ItemGroup>

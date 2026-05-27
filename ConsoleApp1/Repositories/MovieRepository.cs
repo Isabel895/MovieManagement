@@ -2,7 +2,7 @@
 using MovieManagement.Domain.Interfaces;
 using System.Collections;
 
-namespace MovieManagement.Data.Repository
+namespace MovieManagement.Data.Repositories
 {
     public class MovieRepository: IMovieRepository
     {
@@ -39,12 +39,12 @@ namespace MovieManagement.Data.Repository
             return null;
         }
 
-        public bool Remover(string titulo)
+        public bool Remover(int id)
         {
             Movie? movie = null;
             foreach (Movie m in _movies)
             {
-                if (m.Titulo==titulo)
+                if (m.ID==id)
                 {
                     movie = m;
                     break;
