@@ -46,7 +46,6 @@ namespace MovieManagement.Business.Services
 
             ValidarCampos(titulo, ano, classificacao, categoriaId, realizadorId);
 
-            // Se mudou o titulo, verificar que o novo nao esta em uso por outro filme
             if (!existente.Titulo.Equals(titulo, StringComparison.OrdinalIgnoreCase) && _repository.ExistePorTitulo(titulo))
                 throw new Exception("Ja existe um filme com esse titulo");
 
@@ -60,15 +59,27 @@ namespace MovieManagement.Business.Services
             _repository.Editar(existente);
         }
 
-        public List<Movie> Listar()
+        public List<Movie> Listar() => _repository.Listar();
+
+        public List<Movie> ListarOrdenado(string criterio)
         {
-            return _repository.Listar();
+            var filmes = _repository.Listar();
+            return criterio switch
+            {
+                "titulo" => filmes.OrderBy(m => m.Titulo).ToList(),
+                "ano" => filmes.OrderBy(m => m.Ano).ToList(),
+                "classificacao" => filmes.OrderByDescending(m => m.Classificacao).ToList(),
+                _ => filmes
+            };
         }
 
-        public Movie? ObterPorTitulo(string titulo)
-        {
-            return _repository.ObterPorTitulo(titulo);
-        }
+        public List<Movie> FiltrarPorCategoria(int categoriaId) =>
+            _repository.Listar().Where(m => m.CategoriaId == categoriaId).ToList();
+
+        public List<Movie> FiltrarPorRealizador(int realizadorId) =>
+            _repository.Listar().Where(m => m.RealizadorId == realizadorId).ToList();
+
+        public Movie? ObterPorTitulo(string titulo) => _repository.ObterPorTitulo(titulo);
 
         public void Remover(int id)
         {

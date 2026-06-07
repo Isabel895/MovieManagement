@@ -199,9 +199,12 @@ namespace MovieManagement.UI
                 Console.WriteLine("=== Filmes ===");
                 Console.WriteLine("1. Adicionar filme");
                 Console.WriteLine("2. Listar filmes");
-                Console.WriteLine("3. Editar filme");
-                Console.WriteLine("4. Remover filme");
-                Console.WriteLine("5. Pesquisar por titulo");
+                Console.WriteLine("3. Listar filmes ordenados");
+                Console.WriteLine("4. Filtrar filmes");
+                Console.WriteLine("5. Editar filme");
+                Console.WriteLine("6. Remover filme");
+                Console.WriteLine("7. Pesquisar por titulo");
+                Console.WriteLine("8. Relatorio");
                 Console.WriteLine("0. Voltar");
                 Console.Write("\nOpcao: ");
                 string op = Console.ReadLine() ?? "";
@@ -210,9 +213,12 @@ namespace MovieManagement.UI
                 {
                     case "1": AdicionarFilme(); break;
                     case "2": ListarFilmes(); break;
-                    case "3": EditarFilme(); break;
-                    case "4": RemoverFilme(); break;
-                    case "5": PesquisarFilme(); break;
+                    case "3": ListarOrdenado(); break;
+                    case "4": FiltrarFilmes(); break;
+                    case "5": EditarFilme(); break;
+                    case "6": RemoverFilme(); break;
+                    case "7": PesquisarFilme(); break;
+                    case "8": Relatorio(); break;
                     case "0": voltar = true; break;
                 }
             }
@@ -295,26 +301,78 @@ namespace MovieManagement.UI
 
         private void ListarFilmes(bool pausar = true)
         {
-            // Usar SQLite como fonte de nomes (persiste entre sessoes)
             var categorias = _categorySQLService.Listar();
             var realizadores = _directorSQLService.Listar();
 
-            string NomeCategoria(int id) => categorias.Find(c => c.ID == id)?.Nome ?? $"[ID {id}]";
-            string NomeRealizador(int id) => realizadores.Find(d => d.ID == id)?.Nome ?? $"[ID {id}]";
-
-            Console.WriteLine("\n--- Filmes (Memoria) ---");
-            var filmes = _movieService.Listar();
-            if (filmes.Count == 0) Console.WriteLine("Sem filmes.");
-            foreach (var m in filmes)
-                Console.WriteLine($"  [{m.ID}] {m.Titulo} ({m.Ano}) | {m.Lingua} | {m.Classificacao}/5 | {NomeCategoria(m.CategoriaId)} | {NomeRealizador(m.RealizadorId)}");
-
-            Console.WriteLine("\n--- Filmes (SQLite) ---");
-            var filmesSql = _movieSQLService.Listar();
-            if (filmesSql.Count == 0) Console.WriteLine("Sem filmes.");
-            foreach (var m in filmesSql)
-                Console.WriteLine($"  [{m.ID}] {m.Titulo} ({m.Ano}) | {m.Lingua} | {m.Classificacao}/5 | {NomeCategoria(m.CategoriaId)} | {NomeRealizador(m.RealizadorId)}");
+            MostrarLista("Filmes (Memoria)", _movieService.Listar(), categorias, realizadores);
+            MostrarLista("Filmes (SQLite)", _movieSQLService.Listar(), categorias, realizadores);
 
             if (pausar) Pausa();
+        }
+
+        private void ListarOrdenado()
+        {
+            Console.WriteLine("Ordenar por:");
+            Console.WriteLine("  1. Titulo");
+            Console.WriteLine("  2. Ano");
+            Console.WriteLine("  3. Classificacao");
+            Console.Write("Opcao: ");
+            string op = Console.ReadLine() ?? "";
+
+            string criterio = op switch
+            {
+                "1" => "titulo",
+                "2" => "ano",
+                "3" => "classificacao",
+                _ => "titulo"
+            };
+
+            var categorias = _categorySQLService.Listar();
+            var realizadores = _directorSQLService.Listar();
+
+            MostrarLista($"Filmes (Memoria) — ordenados por {criterio}",
+                _movieService.ListarOrdenado(criterio), categorias, realizadores);
+            MostrarLista($"Filmes (SQLite) — ordenados por {criterio}",
+                _movieSQLService.ListarOrdenado(criterio), categorias, realizadores);
+
+            Pausa();
+        }
+
+        private void FiltrarFilmes()
+        {
+            Console.WriteLine("Filtrar por:");
+            Console.WriteLine("  1. Categoria");
+            Console.WriteLine("  2. Realizador");
+            Console.Write("Opcao: ");
+            string op = Console.ReadLine() ?? "";
+
+            var categorias = _categorySQLService.Listar();
+            var realizadores = _directorSQLService.Listar();
+
+            if (op == "1")
+            {
+                Console.WriteLine("\nCategorias disponiveis:");
+                foreach (var c in categorias) Console.WriteLine($"  [{c.ID}] {c.Nome}");
+                int catId = LerInteiro("ID da Categoria: ");
+
+                MostrarLista("Filmes (Memoria)", _movieService.FiltrarPorCategoria(catId), categorias, realizadores);
+                MostrarLista("Filmes (SQLite)", _movieSQLService.FiltrarPorCategoria(catId), categorias, realizadores);
+            }
+            else if (op == "2")
+            {
+                Console.WriteLine("\nRealizadores disponiveis:");
+                foreach (var d in realizadores) Console.WriteLine($"  [{d.ID}] {d.Nome}");
+                int reaId = LerInteiro("ID do Realizador: ");
+
+                MostrarLista("Filmes (Memoria)", _movieService.FiltrarPorRealizador(reaId), categorias, realizadores);
+                MostrarLista("Filmes (SQLite)", _movieSQLService.FiltrarPorRealizador(reaId), categorias, realizadores);
+            }
+            else
+            {
+                Console.WriteLine("Opcao invalida.");
+            }
+
+            Pausa();
         }
 
         private void PesquisarFilme()
@@ -325,15 +383,12 @@ namespace MovieManagement.UI
             var categorias = _categorySQLService.Listar();
             var realizadores = _directorSQLService.Listar();
 
-            string NomeCategoria(int id) => categorias.Find(c => c.ID == id)?.Nome ?? $"[ID {id}]";
-            string NomeRealizador(int id) => realizadores.Find(d => d.ID == id)?.Nome ?? $"[ID {id}]";
-
             void MostrarFilme(Movie? m, string fonte)
             {
                 if (m == null)
                     Console.WriteLine($"  ({fonte}) Nao encontrado.");
                 else
-                    Console.WriteLine($"  ({fonte}) [{m.ID}] {m.Titulo} ({m.Ano}) | {m.Lingua} | {m.Classificacao}/5 | {NomeCategoria(m.CategoriaId)} | {NomeRealizador(m.RealizadorId)}");
+                    Console.WriteLine($"  ({fonte}) {FormatarFilme(m, categorias, realizadores)}");
             }
 
             MostrarFilme(_movieService.ObterPorTitulo(titulo), "Memoria");
@@ -352,14 +407,82 @@ namespace MovieManagement.UI
             Pausa();
         }
 
+        private void Relatorio()
+        {
+            // Usar SQLite como fonte principal (persiste entre sessoes)
+            var filmes = _movieSQLService.Listar();
+            var categorias = _categorySQLService.Listar();
+            var realizadores = _directorSQLService.Listar();
+
+            Console.WriteLine("\n========== RELATORIO ==========");
+
+            if (filmes.Count == 0)
+            {
+                Console.WriteLine("Sem filmes registados.");
+                Pausa(); return;
+            }
+
+            Console.WriteLine($"Total de filmes      : {filmes.Count}");
+            Console.WriteLine($"Total de categorias  : {categorias.Count}");
+            Console.WriteLine($"Total de realizadores: {realizadores.Count}");
+
+            double mediaClass = filmes.Average(m => m.Classificacao);
+            Console.WriteLine($"Classificacao media  : {mediaClass:F1}/5");
+
+            var melhor = filmes.OrderByDescending(m => m.Classificacao).First();
+            Console.WriteLine($"Filme melhor avaliado: {melhor.Titulo} ({melhor.Classificacao}/5)");
+
+            var pior = filmes.OrderBy(m => m.Classificacao).First();
+            Console.WriteLine($"Filme pior avaliado  : {pior.Titulo} ({pior.Classificacao}/5)");
+
+            var maisRecente = filmes.OrderByDescending(m => m.Ano).First();
+            Console.WriteLine($"Filme mais recente   : {maisRecente.Titulo} ({maisRecente.Ano})");
+
+            var maisAntigo = filmes.OrderBy(m => m.Ano).First();
+            Console.WriteLine($"Filme mais antigo    : {maisAntigo.Titulo} ({maisAntigo.Ano})");
+
+            // Categoria mais popular (com mais filmes)
+            var catMaisPopular = filmes
+                .GroupBy(m => m.CategoriaId)
+                .OrderByDescending(g => g.Count())
+                .First();
+            string nomeCategoria = categorias.Find(c => c.ID == catMaisPopular.Key)?.Nome ?? $"ID {catMaisPopular.Key}";
+            Console.WriteLine($"Categoria mais popular: {nomeCategoria} ({catMaisPopular.Count()} filmes)");
+
+            // Realizador com mais filmes
+            var reaMaisAtivo = filmes
+                .GroupBy(m => m.RealizadorId)
+                .OrderByDescending(g => g.Count())
+                .First();
+            string nomeRealizador = realizadores.Find(d => d.ID == reaMaisAtivo.Key)?.Nome ?? $"ID {reaMaisAtivo.Key}";
+            Console.WriteLine($"Realizador mais ativo: {nomeRealizador} ({reaMaisAtivo.Count()} filmes)");
+
+            Console.WriteLine("================================");
+            Pausa();
+        }
+
         //  ASSISTENTES
+        private static void MostrarLista(string titulo, List<Movie> filmes, List<Category> categorias, List<Director> realizadores)
+        {
+            Console.WriteLine($"\n--- {titulo} ---");
+            if (filmes.Count == 0) { Console.WriteLine("  Sem resultados."); return; }
+            foreach (var m in filmes)
+                Console.WriteLine($"  {FormatarFilme(m, categorias, realizadores)}");
+        }
+
+        private static string FormatarFilme(Movie m, List<Category> categorias, List<Director> realizadores)
+        {
+            string cat = categorias.Find(c => c.ID == m.CategoriaId)?.Nome ?? $"[ID {m.CategoriaId}]";
+            string rea = realizadores.Find(d => d.ID == m.RealizadorId)?.Nome ?? $"[ID {m.RealizadorId}]";
+            return $"[{m.ID}] {m.Titulo} ({m.Ano}) | {m.Lingua} | {m.Classificacao}/5 | {cat} | {rea}";
+        }
+
         private static int LerInteiro(string prompt)
         {
             while (true)
             {
                 Console.Write(prompt);
-                if (int.TryParse(Console.ReadLine(), out int valor))
-                    return valor;
+                if (int.TryParse(Console.ReadLine(), out int valor)) return valor;
                 Console.WriteLine("Valor invalido, introduz um numero inteiro.");
             }
         }
