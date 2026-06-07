@@ -1,10 +1,9 @@
 ﻿using MovieManagement.Domain.Entities;
 using MovieManagement.Domain.Interfaces;
-using System.Collections;
 
 namespace MovieManagement.Data.Repositories
 {
-    public class MovieRepository: IMovieRepository
+    public class MovieRepository : IMovieRepository
     {
         private List<Movie> _movies;
         private int _proximoID;
@@ -17,53 +16,39 @@ namespace MovieManagement.Data.Repositories
 
         public void Adicionar(Movie movie)
         {
-            movie.ID = _proximoID;
+            movie.ID = _proximoID++;
             _movies.Add(movie);
-            _proximoID++;
         }
 
-        public List<Movie> Listar()
+        public void Editar(Movie movie)
         {
-            return _movies;
+            Movie? existente = _movies.FirstOrDefault(m => m.ID == movie.ID);
+            if (existente == null) return;
+
+            existente.Titulo = movie.Titulo;
+            existente.Ano = movie.Ano;
+            existente.Lingua = movie.Lingua;
+            existente.Classificacao = movie.Classificacao;
+            existente.CategoriaId = movie.CategoriaId;
+            existente.RealizadorId = movie.RealizadorId;
         }
 
-        public Movie? ObterPorTitulo(string titulo)
-        {
-            foreach (Movie m in _movies)
-            {
-                if (m.Titulo.Equals(titulo,StringComparison.OrdinalIgnoreCase))
-                {
-                    return m;
-                }
-            }
-            return null;
-        }
+        public List<Movie> Listar() => _movies;
+
+        public Movie? ObterPorId(int id) => _movies.FirstOrDefault(m => m.ID == id);
+
+        public Movie? ObterPorTitulo(string titulo) =>
+            _movies.FirstOrDefault(m => m.Titulo.Equals(titulo, StringComparison.OrdinalIgnoreCase));
 
         public bool Remover(int id)
         {
-            Movie? movie = null;
-            foreach (Movie m in _movies)
-            {
-                if (m.ID==id)
-                {
-                    movie = m;
-                    break;
-                }
-            }
-            if (movie!=null)
-            {
-                _movies.Remove(movie);
-                return true;
-            }
-            return false;
+            Movie? movie = _movies.FirstOrDefault(m => m.ID == id);
+            if (movie == null) return false;
+            _movies.Remove(movie);
+            return true;
         }
 
-        public bool ExistePorTitulo(string titulo)
-        {
-            return _movies.Any(m => m.Titulo.Equals(titulo, StringComparison.OrdinalIgnoreCase));
-        }
-
-
-
+        public bool ExistePorTitulo(string titulo) =>
+            _movies.Any(m => m.Titulo.Equals(titulo, StringComparison.OrdinalIgnoreCase));
     }
 }

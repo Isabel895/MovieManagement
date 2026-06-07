@@ -1,12 +1,9 @@
 ﻿using MovieManagement.Domain.Entities;
 using MovieManagement.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MovieManagement.Business.Services
 {
-    public class CategoryServices
+    public class CategoryServices : ICategoryServices
     {
         private readonly ICategoryRepository _repository;
 
@@ -15,19 +12,15 @@ namespace MovieManagement.Business.Services
             _repository = repository;
         }
 
-        public void Adicionar(int id, string nome)
+        public void Adicionar(string nome)
         {
             if (string.IsNullOrEmpty(nome))
-            {
-                throw new Exception("O nome da categoria não pode estar vazio");
-            }
+                throw new Exception("O nome da categoria nao pode estar vazio");
+
             if (_repository.ExistePorNome(nome))
-            {
-                throw new Exception("Já existe uma categoria com esse nome");
-            }
-            Category novo = new Category();
-            novo.ID = id;
-            novo.Nome = nome;
+                throw new Exception("Ja existe uma categoria com esse nome");
+
+            Category novo = new Category { Nome = nome };
             _repository.Adicionar(novo);
         }
 
@@ -40,9 +33,7 @@ namespace MovieManagement.Business.Services
         {
             bool removido = _repository.Remover(id);
             if (!removido)
-            {
-                throw new Exception("Categoria não encontrada");
-            }
+                throw new Exception("Categoria nao encontrada");
         }
     }
 }

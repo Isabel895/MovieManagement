@@ -7,6 +7,8 @@
         public int Ano { get; set; }
         public string Lingua { get; set; }
         public int Classificacao { get; set; }
+        public int CategoriaId { get; set; }
+        public int RealizadorId { get; set; }
 
         public Movie()
         {

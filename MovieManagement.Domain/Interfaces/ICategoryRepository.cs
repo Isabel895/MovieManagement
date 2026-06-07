@@ -12,5 +12,6 @@ namespace MovieManagement.Domain.Interfaces
         public Category? ObterPorNome(string nome);
         public bool Remover(int id);
         public bool ExistePorNome(string nome);
+        public bool ExistePorId(int id);
     }
 }

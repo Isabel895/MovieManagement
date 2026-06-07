@@ -1,12 +1,9 @@
 ﻿using MovieManagement.Domain.Entities;
 using MovieManagement.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MovieManagement.Business.Services
 {
-    public class DirectorServices
+    public class DirectorServices : IDirectorServices
     {
         private readonly IDirectorRepository _repository;
 
@@ -15,22 +12,16 @@ namespace MovieManagement.Business.Services
             _repository = repository;
         }
 
-        public void Adicionar(int id, string nome, string pais)
+        public void Adicionar(string nome, string pais)
         {
             if (string.IsNullOrEmpty(nome))
-            {
-                throw new Exception("O nome do realizador não pode estar vazio");
-            }
+                throw new Exception("O nome do realizador nao pode estar vazio");
+
             if (_repository.ExistePorNome(nome))
-            {
-                throw new Exception("Já existe um realizador com esse nome");
-            }
-           
-            Director novo = new Director();
-            novo.ID = id;
-            novo.Nome = nome;
-            novo.Pais = pais;
-            
+                throw new Exception("Ja existe um realizador com esse nome");
+
+            Director novo = new Director { Nome = nome, Pais = pais };
+            _repository.Adicionar(novo);
         }
 
         public List<Director> Listar()
@@ -42,9 +33,7 @@ namespace MovieManagement.Business.Services
         {
             bool removido = _repository.Remover(id);
             if (!removido)
-            {
-                throw new Exception("Realizador não encontrado");
-            }
+                throw new Exception("Realizador nao encontrado");
         }
     }
 }

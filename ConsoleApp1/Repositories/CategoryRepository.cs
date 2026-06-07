@@ -60,10 +60,14 @@ namespace MovieManagement.Data.Repositories
             }
             return false;
         }
-
         public bool ExistePorNome(string nome)
         {
             return _categories.Any(c => c.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public bool ExistePorId(int id)
+        {
+            return _categories.Any(c => c.ID == id);
         }
     }
 }

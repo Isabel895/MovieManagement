@@ -11,4 +11,10 @@
     <Compile Remove="DirectorSQLRepository.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleApp1\MovieManagement.Data.csproj" />
+    <ProjectReference Include="..\MovieManagement.Business\MovieManagement.Business.csproj" />
+    <ProjectReference Include="..\MovieManagement.Domain\MovieManagement.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
